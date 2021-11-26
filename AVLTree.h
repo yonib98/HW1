@@ -144,6 +144,11 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
                 int right_bf = right_son->getBf();
                 if (right_bf <= 0) {
                     leftRotation(parent, right_son);
+                    if(parent->parent== nullptr)
+                        root=right_son;
+                    else{
+                        parent->parent->right = right_son;
+                    }
                 } else {
                     Node *right_left_son = right_son->left;
                     temp->right = (right_left_son);
