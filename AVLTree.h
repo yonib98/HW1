@@ -20,6 +20,17 @@ class AVLTree {
             int right_height = right == nullptr ? -1 : right->height;
             return left_height - right_height;
         }
+        void updateHeight(){
+            int lheight = left==nullptr? -1:left->height;
+            int rheight = right ==nullptr? -1:right->height;
+            height = std::max(lheight,rheight)+1;
+        }
+        bool isLeaf(){
+            return !isLeaf() && (right==nullptr || left == nullptr);
+        }
+        bool isOnlySingleChild(){
+            return (right==nullptr && left!= nullptr) || (right!=nullptr && left==nullptr);
+        }
         bool operator==(const Node &to_compare) const;
 
         bool operator>(const Node &to_compare) const;
@@ -32,11 +43,15 @@ class AVLTree {
 
     Node *innerFind(const Node &to_search);
 
+    Node* findSequential(Node* p);
+
     void rightRotation(Node *current_root, Node *root_left_son);
 
     void leftRotation(Node *current_root, Node *root_right_son);
 
-    void removeNode(Node *);
+    void remove(int key_primary, int key_secondary);
+
+    Node* innerRemove(int key_primary,int key_secondary)
 
 public:
     AVLTree(bool use_secondary_key);
@@ -44,8 +59,6 @@ public:
     Node *find(int key_primary, int key_secondary);
 
     void insert(int key_primary, int key_secondary, T data);
-
-    bool remove(const Node &v);
 
     bool isEmpty();
 };
@@ -106,100 +119,264 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
         delete to_insert;
         throw std::exception();
     }
-        if (*to_insert > *result) {
-            result->right = (to_insert);
-            to_insert->parent = result;
-        } else {
-            result->left = (to_insert);
-            to_insert->parent = result;
+    if (*to_insert > *result) {
+        result->right = (to_insert);
+        to_insert->parent = result;
+    } else {
+        result->left = (to_insert);
+        to_insert->parent = result;
+    }
+    Node *temp = to_insert;
+    bool rotation = false;
+    while (temp != root && !rotation) {
+        Node* parent = temp->parent;
+        if(parent->height >= temp->height+1){
+            break;
+        }else{
+            parent->height = temp->height+1;
         }
-        Node *temp = to_insert;
-        bool rotation = false;
-        while (temp != root && !rotation) {
-            Node* parent = temp->parent;
-            if(parent->height >= temp->height+1){
-                break;
-            }else{
-                parent->height = temp->height+1;
-            }
-            int current_bf = parent->getBf();
-            if (current_bf == 2) {
-                rotation = true;
-                Node *left_son = temp->left;
-                int left_bf = left_son->getBf();
-                if (left_bf >= 0) {
-                    rightRotation(temp, left_son);
-                    //LL -> right
-                } else {
-                    Node *left_right_son = left_son->right;
-                    temp->left = (left_right_son);
-                    leftRotation(left_son, left_right_son);
-                    left_son = temp->left;
-                    rightRotation(temp, left_son);
-                    //LR
+        int current_bf = parent->getBf();
+        if (current_bf == 2) {
+            rotation = true;
+            Node *left_son = parent->left;
+            int left_bf = left_son->getBf();
+            if (left_bf >= 0) {
+                if(parent->parent== nullptr)
+                    root=left_son;
+                else{
+                    parent->parent->left = left_son;
                 }
-            } else if (current_bf == -2) {
-                rotation = true;
-                Node *right_son = parent->right;
-                int right_bf = right_son->getBf();
-                if (right_bf <= 0) {
-                    leftRotation(parent, right_son);
-                    if(parent->parent== nullptr)
-                        root=right_son;
-                    else{
-                        parent->parent->right = right_son;
-                    }
-                } else {
-                    Node *right_left_son = right_son->left;
-                    temp->right = (right_left_son);
-                    rightRotation(right_son, right_left_son);
-                    right_son = temp->right;
-                    leftRotation(temp, right_son);
+                rightRotation(parent, left_son);
+                //LL -> right
+            } else {
+
+                Node *left_right_son = left_son->right;
+                parent->left = (left_right_son);
+                leftRotation(left_son, left_right_son);
+
+                if(parent->parent== nullptr){
+                    root=left_right_son;
                 }
+                else{
+                    parent->parent->left=left_right_son;
+                }
+                rightRotation(parent, left_right_son);
+                //LR
             }
-            temp=parent;
+        } else if (current_bf == -2) {
+            rotation = true;
+            Node *right_son = parent->right;
+            int right_bf = right_son->getBf();
+            if (right_bf <= 0) {
+                //RR
+                if(parent->parent== nullptr)
+                    root=right_son;
+                else{
+                    parent->parent->right = right_son;
+                }
+                leftRotation(parent, right_son);
+            } else {
+
+                Node *right_left_son = right_son->left;
+                parent->right = (right_left_son);
+                rightRotation(right_son, right_left_son);
+
+                if (parent->parent == nullptr) {
+                    root = right_left_son;
+                } else {
+                    parent->parent->right = right_left_son;
+                }
+                leftRotation(parent, right_left_son);
+                //RL
+            }
         }
+        temp=parent;
     }
-
-
-//template <class T>
-//void removeNode(Node* v){
-//    if(isLeaf(v)){
-//
-//template <class T>
-//void AVLTree:remove(const Node& v){
-//
-//};
-    template<class T>
-    bool AVLTree<T>::isEmpty() {
-        return root == nullptr;
+}
+template<class T>
+typename AVLTree<T>::Node* AVLTree<T>::innerRemove(int key_primary,int key_secondary){
+    Node to_find=Node();
+    to_find.key_primary=key_primary;
+    if(use_secondary_key){
+        to_find.key_secondary=key_secondary;
     }
-
-    template<class T>
-    void AVLTree<T>::rightRotation(Node *current_root, Node *root_left_son) {
-        Node *temp = root_left_son->right;
-        root_left_son->right = (current_root);
-        current_root->left = (temp);
+    else to_find.key_secondary=0;
+    Node* found= find(to_find);
+    if(found== nullptr || *found!=to_find) {
+        throw std::exception();
     }
-
-    template<class T>
-    void AVLTree<T>::leftRotation(Node *current_root, Node *root_right_son) {
-        Node *temp = root_right_son->left;
-        root_right_son->left = (current_root);
-        current_root->right = (temp);
+    Node* parent = found->parent;
+    if(found->isLeaf()){
+        if(parent== nullptr){
+            root=nullptr;
+        }
+        else{
+            if(parent->right==found){
+                parent->right= nullptr;
+            }
+            else{
+                parent->left= nullptr;
+            }
+        }
+        delete found;
+        return parent;
     }
-
-    template<class T>
-    bool  AVLTree<T>::Node::operator==(const AVLTree<T>::Node& to_compare) const {
-        return this->key_primary == to_compare.key_primary &&
-               this->key_secondary == to_compare.key_secondary;
+    else if (found->isOnlySingleChild()){
+        if(found->right!= nullptr){
+            if(parent->right==found) {
+                parent->right = found->right;
+            }
+            else{
+                parent->left=found->right;
+            }
+        }
+        else{
+            if(parent->right==found){
+                parent->right=found->left;
+            }
+            else{
+                parent->left=found->left;
+            }
+        }
+        found->left->parent=parent;
+        delete found;
+        return parent;
     }
+    else{
+        Node* new_node = findSequential(found);
+        Node* new_left_son = found->left;
+        Node* new_right_son = found->right;
+        Node* new_parent = found->parent;
+
+        if(found==root){
+            root=new_node;
+        }
+        found->left=new_node->left;
+        found->right = new_node->right;
+        found->updateHeight();
+        found->parent=new_node->parent;
+
+        new_node->left = new_left_son;
+        new_node->right = new_right_son;
+        updateHeight(new_node);
+        new_node->parent=new_parent;
+        innerRemove(key_secondary,key_secondary);
+    }
+}
+template <class T>
+void AVLTree<T>::remove(int key_primary, int key_secondary){
+    Node* parent = innerRemove(key_primary,key_secondary);
+    while(parent!=root){
+        parent->updateHeight();
+        int current_bf = parent->getBf();
+        if(current_bf==2){
+            Node* left_son = parent->left;
+            int left_bf = left_son->getBf();
+            if(left_bf>=0){
+                if(parent->parent== nullptr)
+                    root=left_son;
+                else{
+                    parent->parent->left = left_son;
+                }
+                rightRotation(parent, left_son);
+                //LL
+            }
+            else{
+                Node *left_right_son = left_son->right;
+                parent->left = (left_right_son);
+                leftRotation(left_son, left_right_son);
+
+                if(parent->parent== nullptr){
+                    root=left_right_son;
+                }
+                else{
+                    parent->parent->left=left_right_son;
+                }
+                rightRotation(parent, left_right_son);
+                //LR
+            }
+        }
+        if(current_bf==-2){
+            Node *right_son = parent->right;
+            int right_bf = right_son->getBf();
+            if (right_bf <= 0) {
+                //RR
+                if(parent->parent== nullptr)
+                    root=right_son;
+                else{
+                    parent->parent->right = right_son;
+                }
+                leftRotation(parent, right_son);
+            } else {
+
+                Node *right_left_son = right_son->left;
+                parent->right = (right_left_son);
+                rightRotation(right_son, right_left_son);
+
+                if (parent->parent == nullptr) {
+                    root = right_left_son;
+                } else {
+                    parent->parent->right = right_left_son;
+                }
+                leftRotation(parent, right_left_son);
+                //RL
+            }
+        }
+        parent=parent->parent;
+    }
+}
 
 template<class T>
-    bool AVLTree<T>::Node::operator>(const typename AVLTree<T>::Node &to_compare) const {
-        if (this->key_primary == to_compare.key_primary) {
-            return this->key_secondary < to_compare.key_secondary;
-        }
-        return this->key_primary > to_compare.key_primary;
+bool AVLTree<T>::isEmpty() {
+    return root == nullptr;
+}
+
+template<class T>
+void AVLTree<T>::rightRotation(Node *current_root, Node *root_left_son) {
+    Node *temp = root_left_son->right;
+    root_left_son->right = (current_root);
+    root_left_son->parent=current_root->parent;
+    current_root->parent=root_left_son;
+    current_root->left =temp;
+    if(temp!= nullptr)
+        temp->parent=current_root;
+    current_root->updateHeight();
+    root_left_son->updateHeight();
+}
+
+template<class T>
+void AVLTree<T>::leftRotation(Node *current_root, Node *root_right_son) {
+    Node *temp = root_right_son->left;
+    root_right_son->left = (current_root);
+    root_right_son->parent=current_root->parent;
+    current_root->parent=root_right_son;
+    current_root->right =temp;
+    if(temp!= nullptr)
+        temp->parent=current_root;
+    current_root->updateHeight();
+    root_right_son->updateHeight();
+}
+
+template<class T>
+bool  AVLTree<T>::Node::operator==(const AVLTree<T>::Node& to_compare) const {
+    return this->key_primary == to_compare.key_primary &&
+           this->key_secondary == to_compare.key_secondary;
+}
+
+template<class T>
+bool AVLTree<T>::Node::operator>(const typename AVLTree<T>::Node &to_compare) const {
+    if (this->key_primary == to_compare.key_primary) {
+        return this->key_secondary < to_compare.key_secondary;
     }
+    return this->key_primary > to_compare.key_primary;
+}
+
+template<class T>
+typename AVLTree<T>::Node* findSequential(typename AVLTree<T>::Node* p){
+    p=p->right;
+    while(*p!= nullptr){
+        p=p->left;
+    }
+    return p;
+}
 #endif //HW1_MIVNEY_AVLTREE_H
