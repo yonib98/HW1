@@ -26,7 +26,7 @@ class AVLTree {
             height = std::max(lheight,rheight)+1;
         }
         bool isLeaf(){
-            return !isLeaf() && (right==nullptr || left == nullptr);
+            return right==nullptr && left == nullptr;
         }
         bool isOnlySingleChild(){
             return (right==nullptr && left!= nullptr) || (right!=nullptr && left==nullptr);
@@ -34,6 +34,7 @@ class AVLTree {
         bool operator==(const Node &to_compare) const;
 
         bool operator>(const Node &to_compare) const;
+
     };
 
     bool use_secondary_key;
@@ -49,9 +50,8 @@ class AVLTree {
 
     void leftRotation(Node *current_root, Node *root_right_son);
 
-    void remove(int key_primary, int key_secondary);
 
-    Node* innerRemove(int key_primary,int key_secondary)
+    Node* innerRemove(int key_primary,int key_secondary);
 
 public:
     AVLTree(bool use_secondary_key);
@@ -59,6 +59,10 @@ public:
     Node *find(int key_primary, int key_secondary);
 
     void insert(int key_primary, int key_secondary, T data);
+
+    void remove(int key_primary, int key_secondary);
+
+    friend std::ostream& operator<< (std::ostream&, const AVLTree&);
 
     bool isEmpty();
 };
@@ -194,6 +198,15 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
     }
 }
 template<class T>
+typename AVLTree<T>::Node* AVLTree<T>::findSequential( typename AVLTree<T>::Node* p){
+    p=p->right;
+    while(p->left!= nullptr){
+        p=p->left;
+    }
+    return p;
+}
+
+template<class T>
 typename AVLTree<T>::Node* AVLTree<T>::innerRemove(int key_primary,int key_secondary){
     Node to_find=Node();
     to_find.key_primary=key_primary;
@@ -201,8 +214,8 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(int key_primary,int key_secon
         to_find.key_secondary=key_secondary;
     }
     else to_find.key_secondary=0;
-    Node* found= find(to_find);
-    if(found== nullptr || *found!=to_find) {
+    Node* found= find(to_find.key_primary,to_find.key_secondary);
+    if(found== nullptr || !(*found == to_find)) {
         throw std::exception();
     }
     Node* parent = found->parent;
@@ -258,7 +271,7 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(int key_primary,int key_secon
 
         new_node->left = new_left_son;
         new_node->right = new_right_son;
-        updateHeight(new_node);
+        new_node->updateHeight();
         new_node->parent=new_parent;
         innerRemove(key_secondary,key_secondary);
     }
@@ -266,7 +279,7 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(int key_primary,int key_secon
 template <class T>
 void AVLTree<T>::remove(int key_primary, int key_secondary){
     Node* parent = innerRemove(key_primary,key_secondary);
-    while(parent!=root){
+    while(parent!=nullptr){
         parent->updateHeight();
         int current_bf = parent->getBf();
         if(current_bf==2){
@@ -371,12 +384,5 @@ bool AVLTree<T>::Node::operator>(const typename AVLTree<T>::Node &to_compare) co
     return this->key_primary > to_compare.key_primary;
 }
 
-template<class T>
-typename AVLTree<T>::Node* findSequential(typename AVLTree<T>::Node* p){
-    p=p->right;
-    while(*p!= nullptr){
-        p=p->left;
-    }
-    return p;
-}
+
 #endif //HW1_MIVNEY_AVLTREE_H
