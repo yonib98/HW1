@@ -2,6 +2,8 @@
 #define HW1_MIVNEY_AVLTREE_H
 #include <cmath>
 #include "memory"
+#include "string"
+#include <iostream>
 struct Trunk
 {
     Trunk *prev;
@@ -12,6 +14,15 @@ struct Trunk
         this->prev = prev;
         this->str = str;
     }
+    void showTrunks(Trunk *p)
+    {
+        if (p == nullptr) {
+            return;
+        }
+
+        showTrunks(p->prev);
+        std::cout << p->str;
+    };
 };
 template <class T>
 class AVLTree {
@@ -74,20 +85,29 @@ class AVLTree {
 public:
     AVLTree(bool use_secondary_key);
 
-    Node *find(int key_primary, int key_secondary);
+    const T& find(int key_primary, int key_secondary);
 
     void insert(int key_primary, int key_secondary, T data);
 
     void remove(int key_primary, int key_secondary);
 
-    bool isEmpty();
+    bool isEmpty() const;
+
+    const T& getBiggest() const;
+
     void print();
 
     void deleteTree();
+
+    ~AVLTree();
 };
 template <class T>
 AVLTree<T>::AVLTree(bool use_secondary_key): use_secondary_key(use_secondary_key), root(nullptr),biggest(nullptr){}
 
+template<class T>
+AVLTree<T>::~AVLTree() {
+    deleteTree();
+}
 template <class T>
 typename AVLTree<T>::Node* AVLTree<T>::innerFind(const Node& to_search){
     Node* closest_parent = nullptr;
@@ -110,15 +130,15 @@ typename AVLTree<T>::Node* AVLTree<T>::innerFind(const Node& to_search){
 }
 
 template <class T>
-typename AVLTree<T>::Node* AVLTree<T>::find(int key_primary,int key_secondary){
+const T& AVLTree<T>::find(int key_primary,int key_secondary){
     Node to_search;
     to_search.key_primary = key_primary;
     to_search.key_secondary=key_secondary;
     Node* result = innerFind(to_search);
     if(*result==to_search){
-        return result;
+        return result->data;
     }
-    return nullptr;
+    throw std::exception();
 
 }
 
@@ -136,9 +156,11 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
     Node *result = innerFind(*to_insert);
     if(result==nullptr){
         root=to_insert;
+        updateBiggest();
         return;
     }
     if (*result == *to_insert) {
+        //AlreadyExists
         delete to_insert;
         throw std::exception();
     }
@@ -229,11 +251,16 @@ typename AVLTree<T>::Node* AVLTree<T>::findSequential( typename AVLTree<T>::Node
 template<class T>
 typename AVLTree<T>::Node* AVLTree<T>::innerRemove(Node* to_find) {
 
-    Node *found = find(to_find->key_primary, to_find->key_secondary);
-    if (found == nullptr) {
+    Node *parent = innerFind(*to_find);
+    Node* found = nullptr;
+    if(parent->right == to_find){
+        found=parent->right;
+    }else if(parent->left == to_find){
+        found=parent->left;
+    }else{
+        //Does not exist
         throw std::exception();
     }
-    Node *parent = found->parent;
     if (found->isLeaf()) {
         if (parent == nullptr) {
             root = nullptr;
@@ -318,7 +345,12 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
                     root=left_right_son;
                 }
                 else{
-                    parent->parent->right=left_right_son;
+                    if(parent->parent->left == parent)
+                    {
+                        parent->parent->left=left_right_son;
+                    }else{
+                        parent->parent->right = left_right_son;
+                    }
                 }
                 rightRotation(parent, left_right_son);
                 //LR
@@ -344,7 +376,12 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
                 if (parent->parent == nullptr) {
                     root = right_left_son;
                 } else {
-                    parent->parent->left = right_left_son;
+                    if(parent->parent->left == parent){
+                        parent->parent->left = right_left_son;
+                    }else{
+                        parent->parent->right = right_left_son;
+                    }
+
                 }
                 leftRotation(parent, right_left_son);
                 //RL
@@ -356,7 +393,7 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
 }
 
 template<class T>
-bool AVLTree<T>::isEmpty() {
+bool AVLTree<T>::isEmpty() const {
     return root == nullptr;
 }
 
@@ -426,15 +463,6 @@ void AVLTree<T>::treeClear(Node* root) {
 
 ///////////////////////////////////////////////ADDING PRINT FUNCTION JUST FOR OUR USE////////////////////////\
 // Helper function to print branches of the binary tree
-void showTrunks(Trunk *p)
-{
-    if (p == nullptr) {
-        return;
-    }
-
-    showTrunks(p->prev);
-    std::cout << p->str;
-}
 
 // Recursive function to print a binary tree.
 // It uses the inorder traversal.
@@ -463,7 +491,7 @@ void AVLTree<T>::printTree(typename AVLTree<T>::Node* root, Trunk *prev, bool is
         prev->str = prev_str;
     }
 
-    showTrunks(trunk);
+    trunk->showTrunks(trunk);
     std::cout << std::to_string(root->key_primary) << std::endl;
 
     if (prev) {
@@ -477,6 +505,11 @@ void AVLTree<T>::printTree(typename AVLTree<T>::Node* root, Trunk *prev, bool is
 template<class T>
 void AVLTree<T>::print() {
     printTree(root, nullptr,false);
+}
+
+template<class T>
+const T& AVLTree<T>::getBiggest() const  {
+    return biggest->data;
 }
 ///////////////////////////////////////////////NEED TO REMEMBER TO DELETE THIS///////////////////////////////
 #endif //HW1_MIVNEY_AVLTREE_H
