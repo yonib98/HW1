@@ -59,8 +59,14 @@ class AVLTree {
         bool operator==(const Node &to_compare) const;
 
         bool operator>(const Node &to_compare) const;
-    };
+        ~Node(){
+            parent=nullptr;
+            left=nullptr;
+            right=nullptr;
+        };
 
+    };
+    int size;
     bool use_secondary_key;
     Node *root;
     Node *biggest;
@@ -68,7 +74,7 @@ class AVLTree {
 
     void updateBiggest();
 
-    Node *innerFind(const Node &to_search);
+    Node *innerFind(const Node &to_search) const;
 
     Node* findSequential(Node* p);
 
@@ -85,7 +91,7 @@ class AVLTree {
 public:
     AVLTree(bool use_secondary_key);
 
-    const T& find(int key_primary, int key_secondary);
+    const T& find(int key_primary, int key_secondary) const;
 
     void insert(int key_primary, int key_secondary, T data);
 
@@ -97,19 +103,30 @@ public:
 
     void print();
 
+    void helpExport(Node* root,T* arr) const;
+
+    T* exportToArray(T* arr) const;
+
+    int getSize() const ;
+
     void deleteTree();
+
+    template<class Predicate>
+            void inOrder(int count,Predicate p) const;
+    template<class Predicate>
+            void helpInOrder(int count,Predicate p,Node* root) const;
 
     ~AVLTree();
 };
 template <class T>
-AVLTree<T>::AVLTree(bool use_secondary_key): use_secondary_key(use_secondary_key), root(nullptr),biggest(nullptr){}
+AVLTree<T>::AVLTree(bool use_secondary_key): use_secondary_key(use_secondary_key), root(nullptr),biggest(nullptr),size(0){}
 
 template<class T>
 AVLTree<T>::~AVLTree() {
     deleteTree();
 }
 template <class T>
-typename AVLTree<T>::Node* AVLTree<T>::innerFind(const Node& to_search){
+typename AVLTree<T>::Node* AVLTree<T>::innerFind(const Node& to_search) const {
     Node* closest_parent = nullptr;
     Node* temp=root;
     while(temp!=nullptr){
@@ -130,7 +147,7 @@ typename AVLTree<T>::Node* AVLTree<T>::innerFind(const Node& to_search){
 }
 
 template <class T>
-const T& AVLTree<T>::find(int key_primary,int key_secondary){
+const T& AVLTree<T>::find(int key_primary,int key_secondary) const {
     Node to_search;
     to_search.key_primary = key_primary;
     to_search.key_secondary=key_secondary;
@@ -156,6 +173,7 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
     Node *result = innerFind(*to_insert);
     if(result==nullptr){
         root=to_insert;
+        size++;
         updateBiggest();
         return;
     }
@@ -237,6 +255,7 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
         }
         temp=parent;
     }
+    size++;
     updateBiggest();
 }
 template<class T>
@@ -390,6 +409,7 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
         parent=parent->parent;
     }
     updateBiggest();
+    size--;
 }
 
 template<class T>
@@ -510,6 +530,43 @@ void AVLTree<T>::print() {
 template<class T>
 const T& AVLTree<T>::getBiggest() const  {
     return biggest->data;
+}
+template<class T>
+void AVLTree<T>::helpExport(Node* root,T* arr) const {
+    if(root==nullptr){
+        return;
+    }
+    helpExport(root->right,arr);
+    *arr = root->data;
+    arr++;
+    helpExport(root->left,arr);
+
+}
+template<class T>
+T* AVLTree<T>::exportToArray(T* arr) const {
+    helpExport(root,arr);
+    return arr;
+}
+
+template<class T>
+template<class Predicate>
+void AVLTree<T>::helpInOrder(int count, Predicate p, typename AVLTree<T>::Node* root) const {
+    if(root==nullptr || count==0) {
+        return;
+    }
+    helpInOrder(count,p,root->left);
+    p(root->data,count);
+    count--;
+    helpInOrder(count,p,root->right);
+}
+template<class T>
+template<class Predicate>
+void AVLTree<T>::inOrder(int count,Predicate p) const {
+    helpInOrder(count,p,root);
+}
+template<class T>
+int AVLTree<T>::getSize() const {
+    return size;
 }
 ///////////////////////////////////////////////NEED TO REMEMBER TO DELETE THIS///////////////////////////////
 #endif //HW1_MIVNEY_AVLTREE_H

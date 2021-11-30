@@ -14,17 +14,22 @@ public:
         shared_ptr<Group> belong_group;
     public:
         Player(int player_id,int level,shared_ptr<Group> belong_group);
+        ~Player();
         int getId() const;
         int getLevel() const;
         void setLevel(int new_level);
         shared_ptr<Group> getGroup() const;
+        void resetGroup();
     };
     Group(int group_id);
+    ~Group();
     int getId() const;
     void insertPlayer(shared_ptr<Player> player_to_add);
     void removePlayer(shared_ptr<Player> player_to_remove);
     bool isEmpty() const;
     shared_ptr<Player> getBiggest() const;
+    int getPlayersCount() const;
+    const AVLTree<std::shared_ptr<Player>>& getPlayersByLevels() const;
 private:
     int group_id;
     AVLTree<shared_ptr<Player>> players_id_tree;
@@ -37,6 +42,8 @@ class PlayerManager{
     AVLTree<shared_ptr<Group>> all_groups_tree;
     AVLTree<shared_ptr<Group::Player>> not_empty_groups_best_players_tree;
     shared_ptr<Group::Player> getBestPlayer() const;
+
+    void getBiggestPlayer(shared_ptr<Group::Player> player,std::shared_ptr<Group::Player>* players, int index);
 public:
     PlayerManager();
     void addPlayer(int player_id,int group_id, int level);
@@ -45,7 +52,19 @@ public:
     void replaceGroup(int group_id, int replacement_id);
     void increaseLevel(int player_id, int level_increase);
     int getHighestLevel(int group_id, int player_id);
+    void getAllPlayersByLevel(int group_id,shared_ptr<Group::Player>* players, int* num_of_players) const;
+    void getGroupsHighestLevel(int* numOfGroups,shared_ptr<Group::Player>* players) const;
     ~PlayerManager();
 
+
+    class funcObj{
+        int numOfGroups;
+        shared_ptr<Group::Player>* players;
+    public:
+        funcObj(int numOfGroups,shared_ptr<Group::Player>* players): numOfGroups(numOfGroups), players(players){}
+        void operator()(shared_ptr<Group::Player> player,int count){
+            players[numOfGroups-count]=player;
+        }
+    };
 };
 #endif //HW1_MIVNEY_PLAYERMANAGER_H
