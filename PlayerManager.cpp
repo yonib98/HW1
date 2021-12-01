@@ -13,9 +13,6 @@ int Group::Player::getLevel() const{
 void Group::Player::resetGroup(){
     belong_group=nullptr;
 }
-Group::Player::~Player(){
-    belong_group=nullptr;
-}
 shared_ptr<Group> Group::Player::getGroup() const{
     return belong_group;
 }
@@ -43,7 +40,11 @@ int Group::getId() const {
 bool Group::isEmpty() const {
     return players_id_tree.isEmpty();
 }
+void Group::mergeGroups(Group& group_to_merge) {
+    this->players_id_tree.mergeWith(group_to_merge.players_id_tree);
+    this->players_level_tree.mergeWith(group_to_merge.players_level_tree);
 
+}
 void Group::insertPlayer(shared_ptr<Player> player_to_add) {
     int player_id= player_to_add->getId();
     int player_level=player_to_add->getLevel();
@@ -172,5 +173,15 @@ void PlayerManager::getAllPlayersByLevel(int group_id,shared_ptr<Group::Player>*
 
 void PlayerManager::getGroupsHighestLevel(int* numOfGroups, std::shared_ptr<Group::Player> *players) const {
     funcObj test = funcObj(*numOfGroups,players);
-    not_empty_groups_best_players_tree.inOrder(*numOfGroups,test);
+    int numOfGroups_copy=*numOfGroups;
+    not_empty_groups_best_players_tree.inOrder(&numOfGroups_copy,test);
+}
+
+void PlayerManager::replaceGroup(int group_id, int replacement_id) {
+    //Find gruop to remove and group to replace 2logk
+    shared_ptr<Group> to_remove_group = all_groups_tree.find(group_id,0);
+    shared_ptr<Group> replacement_group = all_groups_tree.find(replacement_id,0);
+    //merge: players_group_remove_tree with players of group to replace
+    replacement_group->mergeGroups(*to_remove_group);
+    all_groups_tree.remove(group_id,0);
 }

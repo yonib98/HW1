@@ -14,12 +14,12 @@ public:
         shared_ptr<Group> belong_group;
     public:
         Player(int player_id,int level,shared_ptr<Group> belong_group);
-        ~Player();
         int getId() const;
         int getLevel() const;
         void setLevel(int new_level);
         shared_ptr<Group> getGroup() const;
         void resetGroup();
+
     };
     Group(int group_id);
     ~Group();
@@ -27,6 +27,7 @@ public:
     void insertPlayer(shared_ptr<Player> player_to_add);
     void removePlayer(shared_ptr<Player> player_to_remove);
     bool isEmpty() const;
+    void mergeGroups(Group& group_to_merge);
     shared_ptr<Player> getBiggest() const;
     int getPlayersCount() const;
     const AVLTree<std::shared_ptr<Player>>& getPlayersByLevels() const;
@@ -62,8 +63,8 @@ public:
         shared_ptr<Group::Player>* players;
     public:
         funcObj(int numOfGroups,shared_ptr<Group::Player>* players): numOfGroups(numOfGroups), players(players){}
-        void operator()(shared_ptr<Group::Player> player,int count){
-            players[numOfGroups-count]=player;
+        void operator()(shared_ptr<Group::Player> player,int* count){
+            players[numOfGroups-*count]=player;
         }
     };
 };
