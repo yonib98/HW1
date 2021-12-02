@@ -25,7 +25,16 @@ const AVLTree<std::shared_ptr<Group::Player>>& Group::getPlayersByLevels() const
 int Group::getPlayersCount() const{
     return players_level_tree.getSize();
 }
+void Group::updateBelongs(shared_ptr<Group> ptr) {
+    int group_size= getPlayersCount();
+    shared_ptr<Player>* group_players = new shared_ptr<Player>[group_size];
+    players_level_tree.exportToArray(group_players);
+    for(int i=0;i<group_size;i++){
+        group_players[i]->belong_group=ptr;
+    }
+    delete[] group_players;
 
+}
 Group::Group(int group_id): group_id(group_id), players_id_tree(false), players_level_tree(true){
 }
 
@@ -60,6 +69,10 @@ void Group::removePlayer(shared_ptr<Player> player_to_remove){
 }
 shared_ptr<Group::Player> Group::getBiggest() const{
     return this->players_level_tree.getBiggest();
+}
+void Group::updateGroupBiggest(){
+    this->players_id_tree.updateBiggest();
+    this->players_level_tree.updateBiggest();
 }
 PlayerManager::PlayerManager(): all_players_id_tree(false),
                                 all_players_level_tree(true),
@@ -124,7 +137,7 @@ void PlayerManager::increaseLevel(int player_id, int level_increase){
     belong_group->insertPlayer(player_to_update);
 }
 
-int PlayerManager::getHighestLevel(int group_id, int player_id){
+int PlayerManager::getHighestLevel(int group_id){
     if(group_id<0){
         if(all_players_level_tree.isEmpty()){
             return -1;
@@ -137,9 +150,16 @@ int PlayerManager::getHighestLevel(int group_id, int player_id){
     }
     return belong_group->getBiggest()->getId();
 }
-//void PlayerManager::clearPointers(){
-//    all_groups_tree
-//}
+
+int PlayerManager::getGroupSize(int group_id){
+    if(group_id<0){
+        return this->all_players_id_tree.getSize();
+    }
+    else {
+        shared_ptr<Group> group=this->all_groups_tree.find(group_id,0);
+        return group->getPlayersCount();
+    }
+}
 PlayerManager::~PlayerManager(){
     //Log n: n_k1+n_k2+...n_kl=n
     int players_count = all_players_id_tree.getSize();
@@ -152,14 +172,14 @@ PlayerManager::~PlayerManager(){
     delete[] players;
 }
 
-void PlayerManager::getAllPlayersByLevel(int group_id,shared_ptr<Group::Player>* players, int* num_of_players) const {
+void PlayerManager::getAllPlayersByLevel(int group_id,int* players, int* num_of_players) const {
     if(group_id<0){
         *num_of_players=all_players_level_tree.getSize();
         if(*num_of_players==0){
             players=nullptr;
             return;
         }
-        all_players_level_tree.exportToArray(players);
+        all_players_level_tree.exportToIDArray(players);
     }else{
         shared_ptr<Group> group = all_groups_tree.find(group_id,0);
         *num_of_players=group->getPlayersCount();
@@ -167,13 +187,16 @@ void PlayerManager::getAllPlayersByLevel(int group_id,shared_ptr<Group::Player>*
             players= nullptr;
             return;
         }
-        group->getPlayersByLevels().exportToArray(players);
+        group->getPlayersByLevels().exportToIDArray(players);
     }
 }
 
-void PlayerManager::getGroupsHighestLevel(int* numOfGroups, std::shared_ptr<Group::Player> *players) const {
-    funcObj test = funcObj(*numOfGroups,players);
-    int numOfGroups_copy=*numOfGroups;
+void PlayerManager::getGroupsHighestLevel(int numOfGroups, int* players) const {
+    funcObj test = funcObj(numOfGroups,players);
+    int numOfGroups_copy=numOfGroups;
+    if(not_empty_groups_best_players_tree.getSize()<numOfGroups){
+        throw NotEnoughGroups();
+    }
     not_empty_groups_best_players_tree.inOrder(&numOfGroups_copy,test);
 }
 
@@ -183,5 +206,7 @@ void PlayerManager::replaceGroup(int group_id, int replacement_id) {
     shared_ptr<Group> replacement_group = all_groups_tree.find(replacement_id,0);
     //merge: players_group_remove_tree with players of group to replace
     replacement_group->mergeGroups(*to_remove_group);
+    replacement_group->updateBelongs(replacement_group);
     all_groups_tree.remove(group_id,0);
+    replacement_group->updateGroupBiggest();
 }

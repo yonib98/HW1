@@ -12,6 +12,7 @@ public:
         int level;
         int player_id;
         shared_ptr<Group> belong_group;
+        friend class Group;
     public:
         Player(int player_id,int level,shared_ptr<Group> belong_group);
         int getId() const;
@@ -28,6 +29,8 @@ public:
     void removePlayer(shared_ptr<Player> player_to_remove);
     bool isEmpty() const;
     void mergeGroups(Group& group_to_merge);
+    void updateBelongs(shared_ptr<Group> ptr);
+    void updateGroupBiggest();
     shared_ptr<Player> getBiggest() const;
     int getPlayersCount() const;
     const AVLTree<std::shared_ptr<Player>>& getPlayersByLevels() const;
@@ -52,18 +55,19 @@ public:
     void removePlayer(int player_id);
     void replaceGroup(int group_id, int replacement_id);
     void increaseLevel(int player_id, int level_increase);
-    int getHighestLevel(int group_id, int player_id);
-    void getAllPlayersByLevel(int group_id,shared_ptr<Group::Player>* players, int* num_of_players) const;
-    void getGroupsHighestLevel(int* numOfGroups,shared_ptr<Group::Player>* players) const;
+    int getHighestLevel(int group_id);
+    void getAllPlayersByLevel(int group_id,int* Players, int* num_of_players) const;
+    void getGroupsHighestLevel(int numOfGroups, int* players) const;
+    int getGroupSize(int group_id);
     ~PlayerManager();
 
 
     class funcObj{
         int numOfGroups;
-        shared_ptr<Group::Player>* players;
+        int* players;
     public:
-        funcObj(int numOfGroups,shared_ptr<Group::Player>* players): numOfGroups(numOfGroups), players(players){}
-        void operator()(shared_ptr<Group::Player> player,int* count){
+        funcObj(int numOfGroups,int* players): numOfGroups(numOfGroups), players(players){}
+        void operator()(int player,int* count){
             players[numOfGroups-*count]=player;
         }
     };

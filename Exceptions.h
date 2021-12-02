@@ -1,4 +1,10 @@
 #ifndef HW1_EXCEPTION_H
 #define HW1_EXCEPTION_H
-class InvalidInput
+#include <exception>
+using std::exception;
+
+class InvalidInput: public exception {} ;
+class AlreadyExists: public exception {};
+class DoesNotExist: public exception {};
+class NotEnoughGroups: public exception {};
 #endif //HW1_EXCEPTION_H
