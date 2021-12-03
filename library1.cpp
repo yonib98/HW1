@@ -29,6 +29,7 @@ StatusType AddGroup(void* DS, int GroupID){
         return FAILURE;
     }
     return SUCCESS;
+
 }
 
 StatusType AddPlayer(void* DS, int PlayerID, int GroupID, int Level){
@@ -71,7 +72,7 @@ StatusType ReplaceGroup(void* DS, int GroupID, int ReplacementID){
     }
     try{
         PlayerManager* PM= (PlayerManager*)DS;
-        PM->replaceGroup(GroupID,ReplacementID);
+                              PM->replaceGroup(GroupID,ReplacementID);
     }
     catch(std::bad_alloc& e){
         return ALLOCATION_ERROR;
@@ -117,40 +118,58 @@ StatusType GetAllPlayersByLevel(void* DS, int GroupID, int** Players, int* numOf
     if(DS==NULL || Players==NULL || numOfPlayers==NULL || GroupID==0){
         return INVALID_INPUT;
     }
+    int* sortedPlayers=NULL;
     try{
         PlayerManager* PM= (PlayerManager*)DS;
         int group_size = PM->getGroupSize(GroupID);
-        int* sortedPlayers=(int*)malloc(sizeof(int)*group_size);
+        sortedPlayers=(int*)malloc(sizeof(int)*group_size);
         *(Players)=sortedPlayers;
         *numOfPlayers=group_size;
         PM->getAllPlayersByLevel(GroupID,sortedPlayers,numOfPlayers);
     }
     catch(std::bad_alloc& e){
+        if(sortedPlayers!=NULL){
+            free(sortedPlayers);
+        }
         return ALLOCATION_ERROR;
     }
     catch(DoesNotExist& e){
+        if(sortedPlayers!=NULL){
+            free(sortedPlayers);
+
+        }
         return FAILURE;
     }
     catch(NoPlayers& e){
-        *(Players)=nullptr;
+        if(sortedPlayers!=NULL){
+            free(sortedPlayers);
+        }
+        *(Players)=NULL;
     }
     return SUCCESS;
 }
 
 StatusType GetGroupsHighestLevel (void *DS, int numOfGroups, int **Players){
     if(DS==NULL || Players==NULL || numOfGroups<1){
-        return INVALID_INPUT;
+        return INVALID_INPUT;return ALLOCATION_ERROR;
     }
+    int* sortedPlayers=NULL;
     try{
         PlayerManager* PM= (PlayerManager*)DS;
-        int* sortedPlayers=(int*)malloc(sizeof(int)*numOfGroups);
+        sortedPlayers=(int*)malloc(sizeof(int)*numOfGroups);
         *Players = sortedPlayers;
         PM->getGroupsHighestLevel(numOfGroups,sortedPlayers);
     }
     catch (std::bad_alloc& e){
+        if(sortedPlayers!=NULL){
+           free(sortedPlayers);
+        }
         return ALLOCATION_ERROR;
     }
     catch (NotEnoughGroups& e){
+        if(sortedPlayers!=NULL){
+            free(sortedPlayers);
+        }
         return FAILURE;
     }
     return SUCCESS;

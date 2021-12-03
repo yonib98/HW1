@@ -54,6 +54,9 @@ class AVLTree {
         bool isOnlySingleChild(){
             return (right==nullptr && left!= nullptr) || (right!=nullptr && left==nullptr);
         }
+        bool isLeftSonOf(const Node& p) const{
+            return p.left==this;
+        }
         int getKey(){
             return key_primary;
         }
@@ -85,7 +88,7 @@ class AVLTree {
 
     Node* innerRemove(Node* to_find);
 
-    Node* sequentialRemove(Node* seq_to_Remove);
+    Node* sequentialRemove(Node* root);
 
     void treeClear(Node* root);
 
@@ -383,16 +386,20 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(Node* to_find) {
         if (found == root) {
             root = new_node;
         }
+        if(parent!=nullptr){
+            if(found->isLeftSonOf(*parent)){
+                parent->left=new_node;
+            }else{
+                parent->right=new_node;
+            }
+        }
         if(new_node==found->right){
             //No left son for found
             new_node->left=found->left;
             found->left->parent=new_node;
-            if(parent!=nullptr){
-                parent->right=new_node;
-            }
             new_node->parent=parent;
             delete found;
-            if(parent== nullptr){
+            if(parent==nullptr){
                 return new_node;
             }
             return parent;
@@ -423,32 +430,31 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(Node* to_find) {
             new_right_son->parent=new_node;
         }
 
-       Node* p= sequentialRemove(found);
+       Node* p= sequentialRemove(new_node);
         return p;
     }
     return nullptr; //shouldnt get here
 }
 
 template<class T>
-typename AVLTree<T>::Node* AVLTree<T>::sequentialRemove(Node *seq_to_remove){
-    Node* tmp = root->right;
-    while(tmp!=nullptr){
-        if(*seq_to_remove==*(tmp->left)){
-            if(tmp->left->isLeaf()){
-                delete tmp->left;
-                tmp->left=nullptr;
-                return tmp;
-            }else{
-                Node* to_delete = tmp->left;
-                tmp->left=tmp->left->right;
-                tmp->left->right->parent=tmp;
-                delete to_delete;
-                return tmp;
-            }
-        }
-        tmp=tmp->right;
+typename AVLTree<T>::Node* AVLTree<T>::sequentialRemove(Node* root){
+    root=root->right;
+    while(root->left!=nullptr){
+        root=root->left;
     }
-    return nullptr;
+    Node* p = root->parent;
+    if(root->isLeaf()){
+        if(root->isLeftSonOf(*p)){
+            p->left=nullptr;
+        }else{
+            p->right=nullptr;
+        }
+    }else{
+        p->left=root->right;
+        root->right->parent=p;
+    }
+    delete root;
+    return p;
 }
 template <class T>
 void AVLTree<T>::remove(int key_primary, int key_secondary){
@@ -774,7 +780,12 @@ void AVLTree<T>::merge(typename AVLTree<T>::Node** A,int na,
 template<class T>
 void AVLTree<T>::mergeWith(AVLTree<T>& another_tree) {
     int second_arr_size = another_tree.getSize();
-    Node** my_arr = new Node*[size];
+    Node** my_arr;
+    if(size==0){
+        my_arr=nullptr;
+    }else{
+        my_arr = new Node*[size];
+    }
     Node** second_arr = new Node*[second_arr_size];
     int count=0;
     this->exportToNodeArray(this->root,my_arr,&count);

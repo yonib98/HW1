@@ -69,7 +69,7 @@ public:
     public:
         funcObj(int numOfGroups,int* players): numOfGroups(numOfGroups), players(players){}
         void operator()(shared_ptr<Group::Player> player,int* count){
-            players[numOfGroups-*count]=player->getId();
+            this->players[numOfGroups-*(count)]=player->getId();
         }
     };
 };

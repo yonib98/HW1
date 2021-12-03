@@ -133,5 +133,16 @@ int main(){
     RemovePlayer (DS,1656716913);
     IncreaseLevel (DS,762651511 ,4);
     IncreaseLevel (DS,1859388185, 7);
+
+    int* UNTIL_WHEN;
+    GetGroupsHighestLevel(DS,2,&UNTIL_WHEN);
+    AddGroup (DS,68876787);
+    AddPlayer (DS,321630570 ,474860535, 5);
+    RemovePlayer (DS,769486648);
+    RemovePlayer (DS,538527962);
+    ReplaceGroup (DS,474860535 ,632047742);
+    RemovePlayer (DS,762651511);
+    RemovePlayer (DS,1196089856);
+    AddPlayer (DS,1190831456, 3826672, 6);
     return 0;
 }
