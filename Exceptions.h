@@ -7,4 +7,5 @@ class InvalidInput: public exception {} ;
 class AlreadyExists: public exception {};
 class DoesNotExist: public exception {};
 class NotEnoughGroups: public exception {};
+class NoPlayers: public exception {};
 #endif //HW1_EXCEPTION_H

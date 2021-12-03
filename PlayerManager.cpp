@@ -27,6 +27,9 @@ int Group::getPlayersCount() const{
 }
 void Group::updateBelongs(shared_ptr<Group> ptr) {
     int group_size= getPlayersCount();
+    if(group_size==0){
+        return;
+    }
     shared_ptr<Player>* group_players = new shared_ptr<Player>[group_size];
     players_level_tree.exportToArray(group_players);
     for(int i=0;i<group_size;i++){
@@ -45,6 +48,9 @@ Group::~Group(){
 
 int Group::getId() const {
     return group_id;
+}
+int Group::getGroupSize() const{
+    return players_id_tree.getSize();
 }
 bool Group::isEmpty() const {
     return players_id_tree.isEmpty();
@@ -84,13 +90,14 @@ void PlayerManager::addPlayer(int player_id, int group_id, int level) {
     //Search for group - log k
     shared_ptr<Group> belong_group = this->all_groups_tree.find(group_id,0);
     shared_ptr<Group::Player> new_player=make_shared<Group::Player>(player_id,level,belong_group);
-    if(!belong_group->isEmpty()){
-        //Log k
-        not_empty_groups_best_players_tree.remove(group_id,0);
-    }
+
     all_players_id_tree.insert(player_id,0,new_player);
     all_players_level_tree.insert(level,player_id,new_player);
     belong_group->insertPlayer(new_player);
+    if(belong_group->getGroupSize()-1>0) {
+        not_empty_groups_best_players_tree.remove(group_id, 0);
+    }
+    belong_group->updateGroupBiggest();
     not_empty_groups_best_players_tree.insert(group_id,0,belong_group->getBiggest());
 }
 
@@ -123,6 +130,7 @@ shared_ptr<Group::Player> PlayerManager::getBestPlayer() const {
 void PlayerManager::increaseLevel(int player_id, int level_increase){
     shared_ptr<Group::Player> player_to_update = all_players_id_tree.find(player_id,0);
     shared_ptr<Group> belong_group = player_to_update->getGroup();
+    not_empty_groups_best_players_tree.remove(belong_group->getId(),0);
     //Re-sort trees by levels, id's tree not affected
     int current_level = player_to_update->getLevel();
     //Log n
@@ -135,6 +143,8 @@ void PlayerManager::increaseLevel(int player_id, int level_increase){
     all_players_level_tree.insert(new_level,player_id,player_to_update);
     //Log nk
     belong_group->insertPlayer(player_to_update);
+    belong_group->updateGroupBiggest();
+    not_empty_groups_best_players_tree.insert(belong_group->getId(),0,belong_group->getBiggest());
 }
 
 int PlayerManager::getHighestLevel(int group_id){
@@ -176,16 +186,14 @@ void PlayerManager::getAllPlayersByLevel(int group_id,int* players, int* num_of_
     if(group_id<0){
         *num_of_players=all_players_level_tree.getSize();
         if(*num_of_players==0){
-            players=nullptr;
-            return;
+            throw NoPlayers();
         }
         all_players_level_tree.exportToIDArray(players);
     }else{
         shared_ptr<Group> group = all_groups_tree.find(group_id,0);
         *num_of_players=group->getPlayersCount();
         if(*num_of_players==0){
-            players= nullptr;
-            return;
+            throw NoPlayers();
         }
         group->getPlayersByLevels().exportToIDArray(players);
     }
@@ -204,9 +212,18 @@ void PlayerManager::replaceGroup(int group_id, int replacement_id) {
     //Find gruop to remove and group to replace 2logk
     shared_ptr<Group> to_remove_group = all_groups_tree.find(group_id,0);
     shared_ptr<Group> replacement_group = all_groups_tree.find(replacement_id,0);
+    if(to_remove_group->isEmpty()){
+       all_groups_tree.remove(group_id,0);
+       return;
+    }
+    not_empty_groups_best_players_tree.remove(group_id,0);
+    if(!replacement_group->isEmpty()){
+        not_empty_groups_best_players_tree.remove(replacement_id,0);
+    }
     //merge: players_group_remove_tree with players of group to replace
     replacement_group->mergeGroups(*to_remove_group);
     replacement_group->updateBelongs(replacement_group);
     all_groups_tree.remove(group_id,0);
     replacement_group->updateGroupBiggest();
+    not_empty_groups_best_players_tree.insert(replacement_id,0,replacement_group->getBiggest());
 }

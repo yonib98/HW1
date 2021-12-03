@@ -25,6 +25,7 @@ public:
     Group(int group_id);
     ~Group();
     int getId() const;
+    int getGroupSize() const;
     void insertPlayer(shared_ptr<Player> player_to_add);
     void removePlayer(shared_ptr<Player> player_to_remove);
     bool isEmpty() const;
@@ -67,8 +68,8 @@ public:
         int* players;
     public:
         funcObj(int numOfGroups,int* players): numOfGroups(numOfGroups), players(players){}
-        void operator()(int player,int* count){
-            players[numOfGroups-*count]=player;
+        void operator()(shared_ptr<Group::Player> player,int* count){
+            players[numOfGroups-*count]=player->getId();
         }
     };
 };

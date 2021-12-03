@@ -1,416 +1,137 @@
-/***************************************************************************/
-/*                                                                         */
-/* 234218 Data DSs 1, Winter 2021-2022                                     */
-/* Homework : Wet 1                                                        */
-/*                                                                         */
-/***************************************************************************/
-
-/***************************************************************************/
-/*                                                                         */
-/* File Name : main1.cpp                                                   */
-/*                                                                         */
-/* Holds the "int main()" function and the parser of the shell's           */
-/* command line.                                                           */
-/***************************************************************************/
-
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "library1.h"
-#include <iostream>
-using namespace std;
+#include "PlayerManager.h"
+int main(){
+    void* DS = Init();
+    AddGroup(DS,-1 );
+    AddGroup(DS,471592850 );
+    IncreaseLevel(DS,636275974, 9 );
+    AddGroup(DS,  314089087);
+    int* players;
+    GetGroupsHighestLevel(DS,6,&players);
+    AddPlayer(DS, 853156771, 314089087, 5);
+    AddGroup(DS,889492360 );
+    AddPlayer (DS,61709335, 314089087, 5);
+    AddGroup(DS,314089087 );
+    AddPlayer(DS, 477219432, 471592850, -5);
+    ReplaceGroup(DS, 889492360, 471592850);
+    AddGroup(DS,1996431390 ) ;
+    AddGroup(DS,-1 ) ;
+    RemovePlayer(DS,853156771);
+    AddGroup(DS, 1463253849);
+    AddPlayer (DS, 489735371, 1127290812, 2);
+    ReplaceGroup( DS,1463253849, 314089087);
+    AddPlayer (DS,1169024338, -3, 1);
+    RemovePlayer (DS,61709335);
+    ReplaceGroup (DS,1460596601, 1996431390);
+    AddGroup(DS, 782915532);
+    RemovePlayer (DS,1442167728);
+    ReplaceGroup (DS,1996431390, 471592850);
+    ReplaceGroup(DS,471592850, 782915532);
+    int* players2;
+    GetGroupsHighestLevel(DS,-1,&players2);
+    RemovePlayer(DS,273616274);
+    ReplaceGroup(DS, 314089087, -2);
+    AddPlayer(DS,1826246295, 782915532, 3);
+    RemovePlayer(DS,1826246295 ) ;
+    AddPlayer(DS,663127218,1420491992 ,3);
+    RemovePlayer(DS,1023670173 );
+    AddPlayer(DS, 1914100830,593517909,9 );
+    ReplaceGroup(DS, 314089087, 782915532);
+    int* players1;
+    int numOfPlayers;
+    GetAllPlayersByLevel (DS,-3,&players1,&numOfPlayers);
+    int*players4;
+    GetGroupsHighestLevel  (DS,7,&players4);
+    IncreaseLevel (DS,399837257, 3);
+    AddPlayer (DS,1824263004, 782915532, 0);
+    AddGroup (DS,965157631);
+    AddGroup (DS,1177257782);
+    int highest_player;
+    GetHighestLevel(DS,965157631,&highest_player);
+    AddGroup(DS,870189813) ;
+    RemovePlayer(DS, 1824263004);
+    AddPlayer (DS, 12595529 ,782915532, 3);
+    AddGroup (DS, 1177257782);
+    AddGroup (DS,1834029395);
+    ReplaceGroup (DS,1177257782 ,782915532);
+    int* highest;
+    GetGroupsHighestLevel(DS,1,&highest);
+    RemovePlayer (DS,12595529);
+    RemovePlayer (DS,937814816);
+    AddPlayer (DS,253136731, -5, 3);
+    AddPlayer (DS,1448885114, 965157631 ,6);
+    int *highest2;
+    GetGroupsHighestLevel(DS,1,&highest);
+    int player1Id;
+    GetHighestLevel (DS,-2,&player1Id);
+    RemovePlayer (DS,1448885114);
+    int* highest3;
+    GetGroupsHighestLevel(DS,9,&highest3);
+    int player2Id;
+    GetHighestLevel (DS,-7,&player2Id);
+    AddGroup(DS, 1518369983);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/* The command's strings */
-typedef enum {
-    NONE_CMD = -2,
-    COMMENT_CMD = -1,
-    INIT_CMD = 0,
-    ADDGROUP_CMD = 1,
-    ADDPLAYER_CMD = 2,
-    REMOVEPLAYER_CMD = 3,
-    REPLACEGROUP_CMD = 4,
-    INCREASELEVEL_CMD = 5,
-    GETHIGHESTLEVEL_CMD = 6,
-    GETALLPLAYERS_CMD = 7,
-    GETGROUPSHIGHEST_CMD = 8,
-    QUIT_CMD = 9
-} commandType;
-
-static const int numActions = 10;
-static const char *commandStr[] = {
-        "Init",
-        "AddGroup",
-        "AddPlayer",
-        "RemovePlayer",
-        "ReplaceGroup",
-        "IncreaseLevel",
-        "GetHighestLevel",
-        "GetAllPlayersByLevel",
-        "GetGroupsHighestLevel",
-        "Quit" };
-
-static const char* ReturnValToStr(int val) {
-    switch (val) {
-        case SUCCESS:
-            return "SUCCESS";
-        case ALLOCATION_ERROR:
-            return "ALLOCATION_ERROR";
-        case FAILURE:
-            return "FAILURE";
-        case INVALID_INPUT:
-            return "INVALID_INPUT";
-        default:
-            return "";
-    }
-}
-
-/* we assume maximum string size is not longer than 256  */
-#define MAX_STRING_INPUT_SIZE (255)
-#define MAX_BUFFER_SIZE       (255)
-
-#define StrCmp(Src1,Src2) ( strncmp((Src1),(Src2),strlen(Src1)) == 0 )
-
-typedef enum {
-    error_free, error
-} errorType;
-static errorType parser(const char* const command);
-
-#define ValidateRead(read_parameters,required_parameters,ErrorString) \
-if ( (read_parameters)!=(required_parameters) ) { printf(ErrorString); return error; }
-
-static bool isInit = false;
-
-/***************************************************************************/
-/* main                                                                    */
-/***************************************************************************/
-
-int main(int argc, const char**argv) {
-    char buffer[MAX_STRING_INPUT_SIZE];
-
-    // Reading commands
-    while (fgets(buffer, MAX_STRING_INPUT_SIZE, stdin) != NULL) {
-        fflush(stdout);
-        if (parser(buffer) == error)
-            break;
-    };
+    RemovePlayer(DS, 971797504);
+    int* player3Id;
+    GetGroupsHighestLevel (DS, 6,&player3Id);
+    int* players7;
+    int numOfPlayers2;
+    GetAllPlayersByLevel(DS, 1518369983,&players7,&numOfPlayers2);
+    int* players3;
+    int numOfPlayers3;
+    GetAllPlayersByLevel (DS, 870189813, &players3,&numOfPlayers3);
+    IncreaseLevel(DS,1711432505 ,3 ) ;
+    ReplaceGroup (DS, 870189813, 965157631);
+    int *player5Id;
+    GetGroupsHighestLevel (DS,7,&player5Id);
+    AddPlayer (DS,639406789, -2, 9);
+    AddPlayer (DS, 1656716913, 1518369983, 4);
+    AddGroup (DS, 1079904515);
+    AddPlayer (DS,1305852299, 1834029395, 1);
+    AddPlayer (DS,972997892, 1079904515, 6);
+    IncreaseLevel (DS,1305852299, 5);
+    ReplaceGroup (DS,965157631, 1834029395);
+    AddPlayer (DS, 820140711 ,782915532, 8);
+    ReplaceGroup (DS,1079904515, 782915532);
+    RemovePlayer (DS,972997892);
+    AddGroup (DS, 38266725);
+    IncreaseLevel (DS,1305852299, 4);
+    RemovePlayer (DS,820140711);
+    IncreaseLevel (DS,688090665, 2);
+    IncreaseLevel (DS,1656716913, 4);
+    AddPlayer (DS,1979858091, -7, 7);
+    IncreaseLevel (DS,1656716913, 7);
+    RemovePlayer (DS,1305852299);
+    AddPlayer (DS,89061586, 1518369983, 6);
+    IncreaseLevel (DS,1227606818, 4);
+    AddGroup (DS,474860535);
+    AddPlayer (DS,769486648, 1518369983, 7);
+    AddGroup (DS,727522849);
+    ReplaceGroup (DS,38266725 ,113931085);
+    ReplaceGroup (DS,1834029395, 38266725);
+    RemovePlayer (DS,-3);
+    IncreaseLevel (DS,1656716913, 8);
+    ReplaceGroup (DS,1518369983 ,727522849);
+    int highest_player2;
+    GetHighestLevel(DS, -10,&highest_player);
+    AddGroup(DS,632047742);
+    IncreaseLevel (DS,769486648,6);
+    AddPlayer (DS,1875928737, 632047742, 2);
+    ReplaceGroup (DS, 727522849, 632047742);
+    AddPlayer (DS,703782735, 637064316, 5);
+    int* players10;
+    int numOfPlayers11;
+    GetAllPlayersByLevel (DS,38266725,&players10,&numOfPlayers11);
+    AddPlayer (DS,1875928737, 632047742, 2);
+    AddGroup (DS,647226174);
+    AddPlayer (DS,762651511 ,782915532 ,6);
+    int* player22;
+    GetGroupsHighestLevel (DS,1,&player22);
+    RemovePlayer (DS,89061586);
+    AddGroup (DS,1784943279);
+    RemovePlayer (DS,1656716913);
+    IncreaseLevel (DS,762651511 ,4);
+    IncreaseLevel (DS,1859388185, 7);
     return 0;
 }
-
-/***************************************************************************/
-/* Command Checker                                                         */
-/***************************************************************************/
-
-static commandType CheckCommand(const char* const command,
-                                const char** const command_arg) {
-    if (command == NULL || strlen(command) == 0 || StrCmp("\n", command))
-        return (NONE_CMD);
-    if (StrCmp("#", command)) {
-        if (strlen(command) > 1)
-            printf("%s", command);
-        return (COMMENT_CMD);
-    };
-    for (int index = 0; index < numActions; index++) {
-        if (StrCmp(commandStr[index], command)) {
-            *command_arg = command + strlen(commandStr[index]) + 1;
-            return ((commandType) index);
-        };
-    };
-    return (NONE_CMD);
-}
-
-/***************************************************************************/
-/* Commands Functions                                                      */
-/***************************************************************************/
-
-static errorType OnInit(void** DS, const char* const command);
-static errorType OnAddGroup(void* DS, const char* const command);
-static errorType OnAddPlayer(void* DS, const char* const command);
-static errorType OnRemovePlayer(void* DS, const char* const command);
-static errorType OnReplaceGroup(void* DS, const char* const command);
-static errorType OnIncreaseLevel(void* DS, const char* const command);
-static errorType OnGetHighestLevel(void* DS, const char* const command);
-static errorType OnGetAllPlayersByLevel(void* DS, const char* const command);
-static errorType OnGetGroupsHighestLevel(void* DS, const char* const command);
-static errorType OnQuit(void** DS, const char* const command);
-
-/***************************************************************************/
-/* Parser                                                                  */
-/***************************************************************************/
-
-static errorType parser(const char* const command) {
-    static void *DS = NULL; /* The general data structure */
-    const char* command_args = NULL;
-    errorType rtn_val = error;
-
-    commandType command_val = CheckCommand(command, &command_args);
-
-    switch (command_val) {
-
-        case (INIT_CMD):
-            rtn_val = OnInit(&DS, command_args);
-            break;
-        case (ADDGROUP_CMD):
-            rtn_val = OnAddGroup(DS, command_args);
-            break;
-        case (ADDPLAYER_CMD):
-            rtn_val = OnAddPlayer(DS, command_args);
-            break;
-        case (REMOVEPLAYER_CMD):
-            rtn_val = OnRemovePlayer(DS, command_args);
-            break;
-        case (REPLACEGROUP_CMD):
-            rtn_val = OnReplaceGroup(DS, command_args);
-            break;
-        case (INCREASELEVEL_CMD):
-            rtn_val = OnIncreaseLevel(DS, command_args);
-            break;
-        case (GETHIGHESTLEVEL_CMD):
-            rtn_val = OnGetHighestLevel(DS, command_args);
-            break;
-        case (GETALLPLAYERS_CMD):
-            rtn_val = OnGetAllPlayersByLevel(DS, command_args);
-            break;
-        case (GETGROUPSHIGHEST_CMD):
-            rtn_val = OnGetGroupsHighestLevel(DS, command_args);
-            break;
-        case (QUIT_CMD):
-            rtn_val = OnQuit(&DS, command_args);
-            break;
-
-        case (COMMENT_CMD):
-            rtn_val = error_free;
-            break;
-        case (NONE_CMD):
-            rtn_val = error;
-            break;
-        default:
-            assert(false);
-            break;
-    };
-    return (rtn_val);
-}
-
-/***************************************************************************/
-/* OnInit                                                                  */
-/***************************************************************************/
-static errorType OnInit(void** DS, const char* const command) {
-    if (isInit) {
-        printf("Init was already called.\n");
-        return (error_free);
-    };
-    isInit = true;
-
-    *DS = Init();
-    if (*DS == NULL) {
-        printf("Init failed.\n");
-        return error;
-    };
-    printf("Init done.\n");
-
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnAddGroup                                                             */
-/***************************************************************************/
-static errorType OnAddGroup(void* DS, const char* const command) {
-    int groupID;
-    ValidateRead(sscanf(command, "%d", &groupID), 1, "AddGroup failed.\n");
-    StatusType res = AddGroup(DS, groupID);
-
-    if (res != SUCCESS) {
-        printf("AddGroup: %s\n", ReturnValToStr(res));
-        return error_free;
-    } else {
-        printf("AddGroup: %s\n", ReturnValToStr(res));
-    }
-
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnAddPlayer                                                          */
-/***************************************************************************/
-static errorType OnAddPlayer(void* DS, const char* const command) {
-    int playerID;
-    int groupID;
-    int level;
-    ValidateRead(
-            sscanf(command, "%d %d %d", &playerID, &groupID, &level),
-            3, "AddPlayer failed.\n");
-    StatusType res = AddPlayer(DS, playerID, groupID, level);
-
-    if (res != SUCCESS) {
-        printf("AddPlayer: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    printf("AddPlayer: %s\n", ReturnValToStr(res));
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnRemovePlayer                                                            */
-/***************************************************************************/
-static errorType OnRemovePlayer(void* DS, const char* const command) {
-    int playerID;
-    ValidateRead(sscanf(command, "%d", &playerID), 1,
-                 "RemovePlayer failed.\n");
-    StatusType res = RemovePlayer(DS, playerID);
-    if (res != SUCCESS) {
-        printf("RemovePlayer: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    printf("RemovePlayer: %s\n", ReturnValToStr(res));
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnReplaceGroup                                                            */
-/***************************************************************************/
-static errorType OnReplaceGroup(void* DS, const char* const command) {
-    int groupID;
-    int replacementID;
-    ValidateRead(sscanf(command, "%d %d", &groupID, &replacementID), 2,
-                 "ReplaceGroup failed.\n");
-    StatusType res = ReplaceGroup(DS, groupID, replacementID);
-
-    if (res != SUCCESS) {
-        printf("ReplaceGroup: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    printf("ReplaceGroup: %s\n", ReturnValToStr(res));
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnIncreaseLevel                                                         */
-/***************************************************************************/
-static errorType OnIncreaseLevel(void* DS, const char* const command) {
-    int playerID;
-    int levelIncrease;
-    ValidateRead(sscanf(command, "%d %d", &playerID, &levelIncrease), 2,
-                 "IncreaseLevel failed.\n");
-    StatusType res = IncreaseLevel(DS, playerID, levelIncrease);
-
-    if (res != SUCCESS) {
-        printf("IncreaseLevel: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    printf("IncreaseLevel: %s\n", ReturnValToStr(res));
-    return error_free;
-}
-
-
-/***************************************************************************/
-/* OnGetHighestLevel                                                         */
-/***************************************************************************/
-static errorType OnGetHighestLevel(void* DS, const char* const command) {
-    int groupID;
-    ValidateRead(sscanf(command, "%d", &groupID), 1, "GetHighestLevel failed.\n");
-    int playerID;
-    StatusType res = GetHighestLevel(DS, groupID, &playerID);
-
-    if (res != SUCCESS) {
-        printf("GetHighestLevel: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    cout << "Highest level player is: " << playerID << endl;
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnGetAllPlayersByLevel                                                        */
-/***************************************************************************/
-
-void PrintAll(int *playerIDs, int numOfPlayers) {
-    if (numOfPlayers > 0) {
-        cout << "Rank	||	Player" << endl;
-    }
-
-    for (int i = 0; i < numOfPlayers; i++) {
-        cout << i + 1 << "\t||\t" << playerIDs[i] << endl;
-    }
-    cout << "and there are no more players!" << endl;
-
-    free (playerIDs);
-}
-
-static errorType OnGetAllPlayersByLevel(void* DS, const char* const command) {
-    int groupID;
-    ValidateRead(sscanf(command, "%d", &groupID), 1,
-                 "GetAllPlayersByLevel failed.\n");
-    int* playerIDs;
-    int numOfPlayers;
-    StatusType res = GetAllPlayersByLevel(DS, groupID, &playerIDs, &numOfPlayers);
-
-    if (res != SUCCESS) {
-        printf("GetAllPlayersByLevel: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    PrintAll(playerIDs, numOfPlayers);
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnGetGroupsHighestLevel                                                        */
-/***************************************************************************/
-
-void PrintGroupsHighest(int *playerIDs, int numOfGroups) {
-    if (numOfGroups > 0) {
-        cout << "GroupIndex	||	Player" << endl;
-    }
-
-    for (int i = 0; i < numOfGroups; i++) {
-        cout << i + 1 << "\t||\t" << playerIDs[i] << endl;
-    }
-    cout << "and there are no more players!" << endl;
-
-    free (playerIDs);
-}
-
-static errorType OnGetGroupsHighestLevel(void* DS, const char* const command) {
-    int numOfGroups;
-    ValidateRead(sscanf(command, "%d", &numOfGroups), 1,
-                 "GetGroupsHighestLevel failed.\n");
-    int* playerIDs;
-    StatusType res = GetGroupsHighestLevel(DS, numOfGroups, &playerIDs);
-
-    if (res != SUCCESS) {
-        printf("GetGroupsHighestLevel: %s\n", ReturnValToStr(res));
-        return error_free;
-    }
-
-    PrintGroupsHighest(playerIDs, numOfGroups);
-    return error_free;
-}
-
-/***************************************************************************/
-/* OnQuit                                                                  */
-/***************************************************************************/
-static errorType OnQuit(void** DS, const char* const command) {
-    Quit(DS);
-    if (*DS != NULL) {
-        printf("Quit failed.\n");
-        return error;
-    };
-
-    isInit = false;
-    printf("Quit done.\n");
-
-    return error_free;
-}
-
-#ifdef __cplusplus
-}
-#endif

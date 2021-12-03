@@ -131,6 +131,9 @@ StatusType GetAllPlayersByLevel(void* DS, int GroupID, int** Players, int* numOf
     catch(DoesNotExist& e){
         return FAILURE;
     }
+    catch(NoPlayers& e){
+        *(Players)=nullptr;
+    }
     return SUCCESS;
 }
 
@@ -156,6 +159,7 @@ void Quit(void** DS){
     if (DS==NULL) {
         return;
     }
-    delete DS;
+    PlayerManager* PM= ((PlayerManager*)*DS);
+    delete PM;
     *DS=NULL;
 }

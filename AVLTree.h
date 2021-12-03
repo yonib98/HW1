@@ -85,6 +85,8 @@ class AVLTree {
 
     Node* innerRemove(Node* to_find);
 
+    Node* sequentialRemove(Node* seq_to_Remove);
+
     void treeClear(Node* root);
 
     void printTree(Node* root, Trunk *trunks, bool isLeft);
@@ -112,6 +114,8 @@ public:
 
     void print();
 
+    int getSize() const;
+
     void helpExport(Node* root,T* arr, int* count) const;
 
     void helpIDExport(Node* root,int* arr,int *count) const;
@@ -129,8 +133,6 @@ public:
     void makeAlmostComplete(Node* root,int n);
 
     void pushArrayToTree(Node* root,Node** arr,int* index);
-
-    int getSize() const ;
 
     void deleteTree();
 
@@ -191,8 +193,10 @@ T& AVLTree<T>::find(int key_primary,int key_secondary) const {
     to_search.key_primary = key_primary;
     to_search.key_secondary=key_secondary;
     Node* result = innerFind(to_search);
-    if(*result==to_search){
-        return result->data;
+    if(result!= nullptr){
+        if(*result==to_search){
+            return result->data;
+        }
     }
     throw DoesNotExist();
 
@@ -244,8 +248,12 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
             if (left_bf >= 0) {
                 if(parent->parent== nullptr)
                     root=left_son;
-                else{
-                    parent->parent->left = left_son;
+                else {
+                    if (parent->parent->left == parent) {
+                        parent->parent->left = left_son;
+                    } else {
+                        parent->parent->right = left_son;
+                    }
                 }
                 rightRotation(parent, left_son);
                 //LL -> right
@@ -259,7 +267,12 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
                     root=left_right_son;
                 }
                 else{
-                    parent->parent->left=left_right_son;
+                    if(parent->parent->left == parent)
+                    {
+                        parent->parent->left=left_right_son;
+                    }else{
+                        parent->parent->right = left_right_son;
+                    }
                 }
                 rightRotation(parent, left_right_son);
                 //LR
@@ -272,8 +285,12 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
                 //RR
                 if(parent->parent== nullptr)
                     root=right_son;
-                else{
-                    parent->parent->right = right_son;
+               else {
+                    if (parent->parent->left == parent) {
+                        parent->parent->left = right_son;
+                    } else {
+                        parent->parent->right = right_son;
+                    }
                 }
                 leftRotation(parent, right_son);
             } else {
@@ -285,7 +302,12 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
                 if (parent->parent == nullptr) {
                     root = right_left_son;
                 } else {
-                    parent->parent->right = right_left_son;
+                    if(parent->parent->left == parent){
+                        parent->parent->left = right_left_son;
+                    }else{
+                        parent->parent->right = right_left_son;
+                    }
+
                 }
                 leftRotation(parent, right_left_son);
                 //RL
@@ -337,42 +359,97 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(Node* to_find) {
         if (found->right != nullptr) {
             if (parent->right == found) {
                 parent->right = found->right;
+                found->right->parent=parent;
             } else {
                 parent->left = found->right;
+                found->right->parent=parent;
             }
         } else {
             if (parent->right == found) {
                 parent->right = found->left;
+                found->left->parent=parent;
             } else {
                 parent->left = found->left;
+                found->left->parent=parent;
             }
         }
-        found->left->parent = parent;
+        if(found->left!=nullptr){
+            found->left->parent = parent;
+        }
         delete found;
         return parent;
     } else {
         Node *new_node = findSequential(found);
+        if (found == root) {
+            root = new_node;
+        }
+        if(new_node==found->right){
+            //No left son for found
+            new_node->left=found->left;
+            found->left->parent=new_node;
+            if(parent!=nullptr){
+                parent->right=new_node;
+            }
+            new_node->parent=parent;
+            delete found;
+            if(parent== nullptr){
+                return new_node;
+            }
+            return parent;
+
+        }
         Node *new_left_son = found->left;
         Node *new_right_son = found->right;
         Node *new_parent = found->parent;
 
-        if (found == root) {
-            root = new_node;
+        if(new_node->right!=nullptr){
+            new_node->right->parent=found;
         }
-        found->left = new_node->left;
+        found->left = nullptr;
         found->right = new_node->right;
         found->updateHeight();
+        new_node->parent->left=found;
         found->parent = new_node->parent;
 
         new_node->left = new_left_son;
         new_node->right = new_right_son;
         new_node->updateHeight();
         new_node->parent = new_parent;
-        innerRemove(new_node);
+
+        if(new_left_son!= nullptr){
+            new_left_son->parent=new_node;
+        }
+        if(new_right_son!= nullptr){
+            new_right_son->parent=new_node;
+        }
+
+       Node* p= sequentialRemove(found);
+        return p;
     }
     return nullptr; //shouldnt get here
 }
 
+template<class T>
+typename AVLTree<T>::Node* AVLTree<T>::sequentialRemove(Node *seq_to_remove){
+    Node* tmp = root->right;
+    while(tmp!=nullptr){
+        if(*seq_to_remove==*(tmp->left)){
+            if(tmp->left->isLeaf()){
+                delete tmp->left;
+                tmp->left=nullptr;
+                return tmp;
+            }else{
+                Node* to_delete = tmp->left;
+                tmp->left=tmp->left->right;
+                tmp->left->right->parent=tmp;
+                delete to_delete;
+                return tmp;
+            }
+        }
+        tmp=tmp->right;
+    }
+    return nullptr;
+}
 template <class T>
 void AVLTree<T>::remove(int key_primary, int key_secondary){
     Node to_find = Node();
@@ -390,8 +467,12 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
             if(left_bf>=0){
                 if(parent->parent== nullptr)
                     root=left_son;
-                else{
-                    parent->parent->left = left_son;
+                else {
+                    if (parent->parent->left == parent) {
+                        parent->parent->left = left_son;
+                    } else {
+                        parent->parent->right = left_son;
+                    }
                 }
                 rightRotation(parent, left_son);
                 //LL
@@ -423,8 +504,12 @@ void AVLTree<T>::remove(int key_primary, int key_secondary){
                 //RR
                 if(parent->parent== nullptr)
                     root=right_son;
-                else{
-                    parent->parent->right = right_son;
+                else {
+                    if (parent->parent->left == parent) {
+                        parent->parent->left = right_son;
+                    } else {
+                        parent->parent->right = right_son;
+                    }
                 }
                 leftRotation(parent, right_son);
             } else {
@@ -509,6 +594,7 @@ bool AVLTree<T>::Node::operator>(const typename AVLTree<T>::Node &to_compare) co
 template<class T>
 void AVLTree<T>::updateBiggest(){
     Node* tmp = root;
+    biggest=root;
     while(tmp!=nullptr){
         biggest = tmp;
         tmp = tmp->right;
@@ -643,7 +729,7 @@ void AVLTree<T>::helpInOrder(int* count, Predicate p, typename AVLTree<T>::Node*
         return;
     }
     helpInOrder(count,p,root->left);
-    p(root->key_primary,count);
+    p(root->data,count);
     (*count)--;
     helpInOrder(count,p,root->right);
 }
@@ -687,8 +773,8 @@ void AVLTree<T>::merge(typename AVLTree<T>::Node** A,int na,
 }
 template<class T>
 void AVLTree<T>::mergeWith(AVLTree<T>& another_tree) {
-    Node** my_arr = new Node*[size];
     int second_arr_size = another_tree.getSize();
+    Node** my_arr = new Node*[size];
     Node** second_arr = new Node*[second_arr_size];
     int count=0;
     this->exportToNodeArray(this->root,my_arr,&count);
