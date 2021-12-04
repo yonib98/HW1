@@ -142,9 +142,9 @@ public:
     Node* treeCopy(Node* root);
 
     template<class Predicate>
-            void inOrder(int* count,Predicate p) const;
+    void inOrder(int* count,Predicate p) const;
     template<class Predicate>
-            void helpInOrder(int* count,Predicate p,Node* root) const;
+    void helpInOrder(int* count,Predicate p,Node* root) const;
 
     ~AVLTree();
 };
@@ -161,7 +161,7 @@ AVLTree<T>& AVLTree<T>::operator=(const AVLTree<T>& tree_to_copy){
         return *this;
     }
     this->deleteTree();
-   root = this->treeCopy(tree_to_copy.root);
+    root = this->treeCopy(tree_to_copy.root);
     size=tree_to_copy.size;
     use_secondary_key=tree_to_copy.use_secondary_key;
     biggest=tree_to_copy.biggest;
@@ -288,7 +288,7 @@ void AVLTree<T>::insert(int key_primary,int key_secondary,T data) {
                 //RR
                 if(parent->parent== nullptr)
                     root=right_son;
-               else {
+                else {
                     if (parent->parent->left == parent) {
                         parent->parent->left = right_son;
                     } else {
@@ -430,7 +430,7 @@ typename AVLTree<T>::Node* AVLTree<T>::innerRemove(Node* to_find) {
             new_right_son->parent=new_node;
         }
 
-       Node* p= sequentialRemove(new_node);
+        Node* p= sequentialRemove(new_node);
         return p;
     }
     return nullptr; //shouldnt get here
@@ -735,8 +735,11 @@ void AVLTree<T>::helpInOrder(int* count, Predicate p, typename AVLTree<T>::Node*
         return;
     }
     helpInOrder(count,p,root->left);
-    p(root->data,count);
-    (*count)--;
+    if(*count>0){
+        p(root->data,count);
+
+        (*count)--;
+    }
     helpInOrder(count,p,root->right);
 }
 template<class T>
@@ -750,7 +753,7 @@ int AVLTree<T>::getSize() const {
 }
 template<class T>
 void AVLTree<T>::exportToNodeArray(typename AVLTree<T>::Node* root,
-                                             typename AVLTree<T>::Node** arr,int* count) {
+                                   typename AVLTree<T>::Node** arr,int* count) {
     if(root==nullptr || *count==size){
         return;
     }
@@ -765,7 +768,7 @@ void AVLTree<T>::merge(typename AVLTree<T>::Node** A,int na,
     int ia=0,ib=0,ic=0;
     while(ia<na && ib < nb){
         if(*A[ia]>*B[ib]){
-           C[ic++]=B[ib++];
+            C[ic++]=B[ib++];
         }else{
             C[ic++]=A[ia++];
         }
@@ -809,7 +812,7 @@ void AVLTree<T>::mergeWith(AVLTree<T>& another_tree) {
 }
 template<class T>
 typename AVLTree<T>::Node* AVLTree<T>::createCompleteTree(typename AVLTree<T>::Node* root,int h){
-     root= new typename AVLTree<T>::Node();
+    root= new typename AVLTree<T>::Node();
     if(h==0){
         return root;
     }
@@ -825,11 +828,11 @@ template<class T>
 AVLTree<T> AVLTree<T>::almostCompleteTree(bool use_secondary_key,int n){
     AVLTree<T> almost_complete_tree = AVLTree<T>(use_secondary_key);
     int h = std::ceil(std::log2(n+1))-1;
-   almost_complete_tree.root = AVLTree<T>::createCompleteTree(nullptr,h);
-   almost_complete_tree.size=std::pow(2,h+1)-1;
+    almost_complete_tree.root = AVLTree<T>::createCompleteTree(nullptr,h);
+    almost_complete_tree.size=std::pow(2,h+1)-1;
 
-   almost_complete_tree.makeAlmostComplete(almost_complete_tree.root,n);
-   //reverse in order -> almost complete tree
+    almost_complete_tree.makeAlmostComplete(almost_complete_tree.root,n);
+    //reverse in order -> almost complete tree
     return almost_complete_tree;
 }
 template<class T>
